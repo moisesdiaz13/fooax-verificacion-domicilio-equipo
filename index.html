@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verificación Domiciliaria · Equipo FOOAX</title>
+<meta name="theme-color" content="#2E6B5E">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  :root{
+    --ink:#1B2A2E;
+    --primary:#2E6B5E;
+    --primary-dark:#1F4D43;
+    --accent:#E08A2C;
+    --paper:#FBF8F3;
+    --card:#FFFFFF;
+    --line:#E4DED2;
+    --muted:#6B7674;
+    --danger:#B23A32;
+    --ok:#2E6B5E;
+    --warn:#C9A227;
+    --radius:14px;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--sans);}
+  body{padding-bottom:env(safe-area-inset-bottom);}
+  header.app{
+    position:sticky;top:0;z-index:20;
+    background:var(--primary);
+    color:#fff;
+    padding:14px 18px calc(14px + env(safe-area-inset-top)) 18px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 2px 10px rgba(0,0,0,.12);
+  }
+  header.app .brand{display:flex;flex-direction:column;line-height:1.15;}
+  header.app .brand b{font-family:var(--serif);font-size:19px;letter-spacing:.2px;}
+  header.app .brand span{font-size:11px;opacity:.85;}
+  header.app button.icon-btn{
+    background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:10px;
+    padding:8px 10px;font-size:13px;cursor:pointer;
+  }
+  main{max-width:640px;margin:0 auto;padding:16px 16px 100px 16px;}
+
+  .stepper{display:flex;gap:6px;margin:14px 0 18px 0;}
+  .stepper .dot{flex:1;height:4px;border-radius:4px;background:var(--line);}
+  .stepper .dot.done{background:var(--primary);}
+  .stepper .dot.active{background:var(--accent);}
+
+  .step-label{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;}
+  .step-num{
+    font-family:var(--serif);font-size:34px;color:var(--accent);line-height:1;
+  }
+  .step-title h2{margin:0;font-family:var(--serif);font-size:19px;}
+  .step-title p{margin:2px 0 0 0;font-size:12.5px;color:var(--muted);}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;margin-bottom:14px;
+  }
+  label.field{display:block;margin-bottom:14px;}
+  label.field span.lbl{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+  label.field span.hint{display:block;font-size:11.5px;color:var(--muted);margin-top:4px;}
+  input[type=text],input[type=tel],input[type=date],select,textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    font-size:15px;background:#fff;color:var(--ink);font-family:var(--sans);
+  }
+  textarea{min-height:70px;resize:vertical;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+
+  .seg{display:flex;gap:8px;flex-wrap:wrap;}
+  .seg button{
+    flex:1;min-width:90px;padding:10px 8px;border-radius:10px;border:1.5px solid var(--line);
+    background:#fff;color:var(--ink);font-size:13.5px;cursor:pointer;font-weight:600;
+  }
+  .seg button.on{border-color:var(--primary);background:var(--primary);color:#fff;}
+  .seg button.on.danger{border-color:var(--danger);background:var(--danger);}
+  .seg button.on.warn{border-color:var(--warn);background:var(--warn);color:var(--ink);}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}
+
+  fieldset.ref{border:1px dashed var(--line);border-radius:10px;padding:12px;margin-bottom:12px;}
+  fieldset.ref legend{font-size:12px;font-weight:700;color:var(--primary);padding:0 6px;}
+
+  .photo-box{
+    border:2px dashed var(--line);border-radius:12px;padding:14px;text-align:center;
+  }
+  .photo-box img{max-width:100%;border-radius:8px;display:block;margin:0 auto 10px auto;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--primary);color:#fff;border:none;border-radius:10px;
+    padding:12px 16px;font-size:14.5px;font-weight:600;cursor:pointer;width:100%;
+  }
+  .btn.secondary{background:#fff;color:var(--primary);border:1.5px solid var(--primary);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  .consent{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:13px;color:var(--ink);}
+  .consent input{margin-top:3px;}
+
+  .sig-wrap{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;}
+  canvas.sig{width:100%;height:150px;touch-action:none;display:block;background:#fff;}
+  .sig-actions{display:flex;justify-content:space-between;padding:8px 10px;background:#F5F1E9;font-size:12px;}
+  .sig-actions button{background:none;border:none;color:var(--primary);font-weight:700;cursor:pointer;font-size:12.5px;}
+
+  .footer-nav{
+    position:fixed;bottom:0;left:0;right:0;background:var(--paper);
+    border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom)) 16px;
+    display:flex;gap:10px;max-width:640px;margin:0 auto;
+  }
+  .footer-nav .btn{padding:13px 16px;}
+
+  .banner{
+    border-radius:10px;padding:10px 12px;font-size:12.5px;margin-bottom:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .banner.info{background:#EAF2EF;color:var(--primary-dark);}
+  .banner.warn{background:#FBF1DD;color:#7A5B0A;}
+  .banner.danger{background:#FBEAE8;color:var(--danger);}
+
+  .result-summary{font-size:13px;line-height:1.7;}
+  .result-summary b{color:var(--primary-dark);}
+
+  .history-item{
+    display:flex;justify-content:space-between;align-items:center;
+    border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px;background:#fff;
+  }
+  .history-item .h-name{font-weight:700;font-size:14px;}
+  .history-item .h-meta{font-size:11.5px;color:var(--muted);}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:20px;}
+  .badge.exitosa{background:#E2F0EA;color:var(--ok);}
+  .badge.observaciones{background:#FBF1DD;color:#7A5B0A;}
+  .badge.no-conforme{background:#FBEAE8;color:var(--danger);}
+
+  .empty{text-align:center;color:var(--muted);font-size:13px;padding:30px 10px;}
+
+  a.link-btn{color:var(--primary);font-weight:700;text-decoration:none;font-size:13px;}
+
+  .toast{
+    position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:30px;font-size:13px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);z-index:50;max-width:90%;text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="brand">
+    <b>FOOAX</b>
+    <span>Verificación Domiciliaria · Equipo</span>
+  </div>
+  <button class="icon-btn" id="btnHistorial">Historial</button>
+</header>
+
+<main id="app"></main>
+
+<div id="toastHost"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================= CONFIG ================= */
+const SUPABASE_URL = "https://wbkznjbccjivlsveqqwp.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6India3puamJjY2ppdmxzdmVxcXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMjg5NzQsImV4cCI6MjA5NjYwNDk3NH0.eLCNfFMacFkhLIOYpZrvQHLNPcv_HJ9QHTBNHMr4S6U";
+const TABLE = "verificaciones_domicilio_equipo";
+
+let supabase = null;
+try{
+  if (window.supabase && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.startsWith("REEMPLAZA") && SUPABASE_URL && !SUPABASE_URL.startsWith("REEMPLAZA")){
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+}catch(e){ console.warn("Supabase no inicializado", e); }
+
+/* ================= ESTADO ================= */
+const SUPERVISORES = ["Lic. Moisés Antonio", "Ing. Alejandra", "Ing. Monse", "Dirección"];
+const PUESTOS = ["Gerente de Zona","Promotora de Crédito","Supervisor/Coordinador","Personal de oficina"];
+
+function emptyForm(){
+  return {
+    folio: "FDV-" + Date.now().toString().slice(-8),
+    nombre_colaborador:"", puesto:"", domicilio_contrato:"", cp:"", municipio:"", colonia:"", telefono:"",
+    nombre_supervisor:"", fecha_visita: new Date().toISOString().slice(0,10),
+    direccion_coincide:null, direccion_real:"",
+    tipo_vivienda:"", habita_ahi:null, observacion_habita:"",
+    estado_vivienda:"", accesibilidad:"",
+    tipo_comprobante:"", fecha_comprobante:"", comprobante_a_nombre_de:"",
+    ref1_nombre:"", ref1_relacion:"", ref1_confirma:null,
+    ref2_nombre:"", ref2_relacion:"", ref2_confirma:null,
+    foto_consentimiento:null, foto_base64:"", foto_folio:"",
+    observaciones_adicionales:"",
+    resultado:"",
+    firma_colaborador:"", firma_supervisor:"",
+    gps_lat:null, gps_lng:null
+  };
+}
+
+let state = { step:0, view:"form", form: emptyForm(), saving:false };
+
+const TOTAL_STEPS = 7;
+const STEP_TITLES = [
+  {n:"1", t:"Datos del colaborador", s:"Coinciden con el contrato laboral"},
+  {n:"2", t:"Verificación física", s:"Dirección, vivienda y habitabilidad"},
+  {n:"3", t:"Comprobante de domicilio", s:"Recibo reciente a nombre del colaborador o familiar"},
+  {n:"4", t:"Referencias del entorno", s:"Sólo preguntas cerradas — nada de vida privada"},
+  {n:"5", t:"Evidencia y observaciones", s:"Una foto exterior, con consentimiento explícito"},
+  {n:"6", t:"Resultado de la verificación", s:"Exitosa, con observaciones o no conforme"},
+  {n:"7", t:"Firmas", s:"Colaborador y supervisor firman in situ"},
+];
+
+function toast(msg, ms=2600){
+  const host = document.getElementById('toastHost');
+  const el = document.createElement('div');
+  el.className='toast'; el.textContent=msg;
+  host.appendChild(el);
+  setTimeout(()=>el.remove(), ms);
+}
+
+function el(tag, attrs={}, ...children){
+  const e = document.createElement(tag);
+  for(const k in attrs){
+    if(k==='class') e.className=attrs[k];
+    else if(k.startsWith('on')) e.addEventListener(k.slice(2), attrs[k]);
+    else if(k==='html') e.innerHTML=attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  children.flat().forEach(c=>{
+    if(c==null) return;
+    if(typeof c==='string') e.appendChild(document.createTextNode(c));
+    else e.appendChild(c);
+  });
+  return e;
+}
+
+function field(labelText, inputEl, hint){
+  return el('label', {class:'field'},
+    el('span', {class:'lbl'}, labelText),
+    inputEl,
+    hint ? el('span', {class:'hint'}, hint) : null
+  );
+}
+
+function textInput(value, onInput, placeholder='', type='text'){
+  const i = el('input', {type, placeholder, oninput:(e)=>onInput(e.target.value)});
+  i.value = value || '';
+  return i;
+}
+
+function selectInput(value, options, onChange, placeholder='Selecciona...'){
+  const s = el('select', {onchange:(e)=>onChange(e.target.value)});
+  s.appendChild(el('option', {value:''}, placeholder));
+  options.forEach(o=>{
+    const opt = el('option', {value:o}, o);
+    if(o===value) opt.setAttribute('selected','selected');
+    s.appendChild(opt);
+  });
+  return s;
+}
+
+function segButtons(value, options, onChange, colorForValue){
+  const wrap = el('div', {class:'seg'});
+  options.forEach(o=>{
+    const on = value===o.value;
+    const cls = 'seg-btn' + (on ? ' on' + (o.tone ? ' '+o.tone : '') : '');
+    const b = el('button', {type:'button', class: on ? 'on'+(o.tone?(' '+o.tone):'') : '', onclick:()=>onChange(o.value)}, o.label);
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+/* ================= RENDER ================= */
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  if(state.view==='historial'){
+    app.appendChild(renderHistorial());
+    return;
+  }
+  if(state.view==='done'){
+    app.appendChild(renderDone());
+    return;
+  }
+  app.appendChild(renderStepper());
+  app.appendChild(renderStepLabel());
+  app.appendChild(renderStepBody());
+  app.appendChild(renderFooterSpacer());
+  renderFooterNav();
+}
+
+function renderStepper(){
+  const wrap = el('div', {class:'stepper'});
+  for(let i=0;i<TOTAL_STEPS;i++){
+    let cls='dot';
+    if(i<state.step) cls+=' done';
+    if(i===state.step) cls+=' active';
+    wrap.appendChild(el('div', {class:cls}));
+  }
+  return wrap;
+}
+
+function renderStepLabel(){
+  const s = STEP_TITLES[state.step];
+  return el('div', {class:'step-label'},
+    el('div', {class:'step-num'}, s.n),
+    el('div', {class:'step-title'}, el('h2', {}, s.t), el('p', {}, s.s))
+  );
+}
+
+function renderFooterSpacer(){ return el('div', {style:'height:8px;'}); }
+
+function renderStepBody(){
+  const f = state.form;
+  switch(state.step){
+    case 0: return step1(f);
+    case 1: return step2(f);
+    case 2: return step3(f);
+    case 3: return step4(f);
+    case 4: return step5(f);
+    case 5: return step6(f);
+    case 6: return step7(f);
+  }
+}
+
+/* ---- STEP 1: Datos del colaborador ---- */
+function step1(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(el('div', {class:'banner info'}, '📋 Folio de esta visita: ', el('b',{},f.folio)));
+  card.appendChild(field('Nombre completo del colaborador', textInput(f.nombre_colaborador, v=>f.nombre_colaborador=v, 'Ej. Neri Cruz Avendaño')));
+  card.appendChild(field('Puesto', selectInput(f.puesto, PUESTOS, v=>{f.puesto=v; render();})));
+  card.appendChild(field('Domicilio declarado en contrato', textInput(f.domicilio_contrato, v=>f.domicilio_contrato=v, 'Calle, número, referencias')));
+  const grid = el('div', {class:'grid2'});
+  grid.appendChild(field('CP', textInput(f.cp, v=>f.cp=v, '68000')));
+  grid.appendChild(field('Teléfono', textInput(f.telefono, v=>f.telefono=v, '951...', 'tel')));
+  card.appendChild(grid);
+  const grid2 = el('div', {class:'grid2'});
+  grid2.appendChild(field('Municipio', textInput(f.municipio, v=>f.municipio=v)));
+  grid2.appendChild(field('Colonia', textInput(f.colonia, v=>f.colonia=v)));
+  card.appendChild(grid2);
+  card.appendChild(field('Supervisor que realiza la visita', selectInput(f.nombre_supervisor, SUPERVISORES, v=>{f.nombre_supervisor=v; render();}), 'Regla anti-conflicto: nadie verifica a su jefe directo.'));
+  card.appendChild(field('Fecha de la visita', textInput(f.fecha_visita, v=>f.fecha_visita=v, '', 'date')));
+  return card;
+}
+
+/* ---- STEP 2: Verificación física ---- */
+function step2(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(field('¿La dirección coincide con la declarada?',
+    segButtons(f.direccion_coincide, [{value:true,label:'Sí'},{value:false,label:'No'}], v=>{f.direccion_coincide=v; render();})
+  ));
+  if(f.direccion_coincide===false){
+    card.appendChild(field('Anotar la dirección real', textInput(f.direccion_real, v=>f.direccion_real=v)));
+  }
+  card.appendChild(field('Tipo de vivienda',
+    segButtons(f.tipo_vivienda, [{value:'Propia',label:'Propia'},{value:'Rentada',label:'Rentada'},{value:'Familiar',label:'Familiar'},{value:'Otro',label:'Otro'}], v=>{f.tipo_vivienda=v; render();})
+  ));
+  card.appendChild(field('¿El colaborador efectivamente habita ahí?',
+    segButtons(f.habita_ahi, [{value:true,label:'Sí'},{value:false,label:'No'}], v=>{f.habita_ahi=v; render();})
+  ));
+  card.appendChild(field('Observación (habitabilidad)', el('textarea', {oninput:e=>f.observacion_habita=e.target.value}, f.observacion_habita)));
+  card.appendChild(field('Estado general de la vivienda', textInput(f.estado_vivienda, v=>f.estado_vivienda=v, 'Ej. buen estado, en construcción...')));
+  card.appendChild(field('Accesibilidad', textInput(f.accesibilidad, v=>f.accesibilidad=v, 'Ej. calle pavimentada, acceso por vereda...')));
+  card.appendChild(el('div', {class:'banner warn'}, '⏱ Recuerda: la visita completa dura entre 20 y 30 minutos. No se entra a la casa salvo invitación explícita.'));
+  return card;
+}
+
+/* ---- STEP 3: Comprobante de domicilio ---- */
+function step3(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(field('Tipo de comprobante',
+    segButtons(f.tipo_comprobante, [{value:'Luz',label:'Luz'},{value:'Agua',label:'Agua'},{value:'Predial',label:'Predial'},{value:'Teléfono',label:'Teléfono'},{value:'Otro',label:'Otro'}], v=>{f.tipo_comprobante=v; render();})
+  ));
+  card.appendChild(field('Fecha del comprobante', textInput(f.fecha_comprobante, v=>f.fecha_comprobante=v, '', 'date')));
+  card.appendChild(field('A nombre de', textInput(f.comprobante_a_nombre_de, v=>f.comprobante_a_nombre_de=v, 'Colaborador o familiar directo')));
+  return card;
+}
+
+/* ---- STEP 4: Referencias del entorno ---- */
+function step4(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(el('div', {class:'banner info'}, 'Sólo se pregunta: "¿Conoce a [Nombre]? ¿Sabe si vive aquí?". Nada sobre comportamiento, finanzas o vida privada.'));
+  const r1 = el('fieldset', {class:'ref'}, el('legend',{},'Referencia 1'));
+  r1.appendChild(field('Nombre', textInput(f.ref1_nombre, v=>f.ref1_nombre=v)));
+  r1.appendChild(field('Relación', textInput(f.ref1_relacion, v=>f.ref1_relacion=v, 'Vecino, comerciante, portero...')));
+  r1.appendChild(field('¿Confirma?', segButtons(f.ref1_confirma, [{value:true,label:'Sí'},{value:false,label:'No'}], v=>{f.ref1_confirma=v; render();})));
+  card.appendChild(r1);
+  const r2 = el('fieldset', {class:'ref'}, el('legend',{},'Referencia 2'));
+  r2.appendChild(field('Nombre', textInput(f.ref2_nombre, v=>f.ref2_nombre=v)));
+  r2.appendChild(field('Relación', textInput(f.ref2_relacion, v=>f.ref2_relacion=v)));
+  r2.appendChild(field('¿Confirma?', segButtons(f.ref2_confirma, [{value:true,label:'Sí'},{value:false,label:'No'}], v=>{f.ref2_confirma=v; render();})));
+  card.appendChild(r2);
+  return card;
+}
+
+/* ---- STEP 5: Evidencia y observaciones ---- */
+function step5(f){
+  const card = el('div', {class:'card'});
+  const box = el('div', {class:'photo-box'});
+  if(f.foto_base64){
+    box.appendChild(el('img', {src:f.foto_base64}));
+    box.appendChild(el('button', {class:'btn secondary', type:'button', onclick:()=>{f.foto_base64=''; render();}}, 'Tomar otra foto'));
+  } else {
+    box.appendChild(el('p', {style:'font-size:13px;color:var(--muted);margin:0 0 10px 0;'}, '📷 Una sola foto: fachada con número visible. Sólo con consentimiento explícito del colaborador.'));
+    const inp = el('input', {type:'file', accept:'image/*', capture:'environment', style:'display:none'});
+    inp.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{ f.foto_base64 = reader.result; f.foto_folio = f.folio+'-FOTO'; render(); };
+      reader.readAsDataURL(file);
+    });
+    const btn = el('button', {class:'btn', type:'button', onclick:()=>inp.click()}, 'Tomar fotografía exterior');
+    box.appendChild(btn);
+    box.appendChild(inp);
+  }
+  card.appendChild(box);
+  card.appendChild(field('Folio de foto', textInput(f.foto_folio, v=>f.foto_folio=v)));
+  card.appendChild(field('¿Fotografía tomada con consentimiento explícito?',
+    segButtons(f.foto_consentimiento, [{value:true,label:'Sí'},{value:false,label:'No'}], v=>{f.foto_consentimiento=v; render();})
+  ));
+  card.appendChild(field('Observaciones adicionales', el('textarea', {oninput:e=>f.observaciones_adicionales=e.target.value}, f.observaciones_adicionales)));
+  return card;
+}
+
+/* ---- STEP 6: Resultado ---- */
+function step6(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(field('Resultado de la verificación',
+    segButtons(f.resultado, [
+      {value:'Verificación exitosa', label:'Exitosa'},
+      {value:'Con observaciones', label:'Con observaciones'},
+      {value:'No conforme', label:'No conforme', tone:'danger'},
+    ], v=>{f.resultado=v; render();})
+  ));
+  if(f.resultado==='No conforme'){
+    card.appendChild(el('div', {class:'banner danger'}, '⚠ Reporte inmediato a Dirección. Revisa el protocolo de la sección "Si algo no cuadra".'));
+  }
+  card.appendChild(el('div', {class:'card', style:'background:#F7F4EC;'},
+    el('p', {style:'margin:0 0 8px 0;font-weight:700;font-size:13px;'}, 'Resumen de la visita'),
+    el('div', {class:'result-summary'},
+      `Colaborador: `, el('b',{}, f.nombre_colaborador||'—'), el('br',{}),
+      `Puesto: `, el('b',{}, f.puesto||'—'), el('br',{}),
+      `Supervisor: `, el('b',{}, f.nombre_supervisor||'—'), el('br',{}),
+      `Domicilio coincide: `, el('b',{}, f.direccion_coincide===null?'—':(f.direccion_coincide?'Sí':'No')), el('br',{}),
+      `Habita ahí: `, el('b',{}, f.habita_ahi===null?'—':(f.habita_ahi?'Sí':'No')), el('br',{}),
+      `Referencias confirman: `, el('b',{}, [f.ref1_confirma,f.ref2_confirma].filter(x=>x===true).length + ' de 2')
+    )
+  ));
+  return card;
+}
+
+/* ---- STEP 7: Firmas ---- */
+let sigCanvases = {};
+function makeSignaturePad(key, existingDataUrl){
+  const wrap = el('div', {class:'sig-wrap'});
+  const canvas = el('canvas', {class:'sig'});
+  wrap.appendChild(canvas);
+  const actions = el('div', {class:'sig-actions'},
+    el('span', {}, 'Firma aquí con el dedo'),
+    el('button', {type:'button', onclick:()=>{ clearSig(key); }}, 'Borrar')
+  );
+  wrap.appendChild(actions);
+  setTimeout(()=>initSig(canvas, key, existingDataUrl), 0);
+  return wrap;
+}
+
+function initSig(canvas, key, existingDataUrl){
+  const ctx = canvas.getContext('2d');
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*ratio;
+  canvas.height = rect.height*ratio;
+  ctx.scale(ratio, ratio);
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#1B2A2E';
+  sigCanvases[key] = {canvas, ctx, drawing:false};
+  if(existingDataUrl){
+    const img = new Image();
+    img.onload = ()=>ctx.drawImage(img,0,0,rect.width,rect.height);
+    img.src = existingDataUrl;
+  }
+  const pos = (e)=>{
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {x: t.clientX-r.left, y: t.clientY-r.top};
+  };
+  const start = (e)=>{ e.preventDefault(); sigCanvases[key].drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  const move = (e)=>{ if(!sigCanvases[key].drawing) return; e.preventDefault(); const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+  const end = (e)=>{
+    sigCanvases[key].drawing=false;
+    saveSig(key);
+  };
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', end);
+  canvas.addEventListener('touchstart', start, {passive:false});
+  canvas.addEventListener('touchmove', move, {passive:false});
+  canvas.addEventListener('touchend', end);
+}
+
+function saveSig(key){
+  const s = sigCanvases[key];
+  if(!s) return;
+  const dataUrl = s.canvas.toDataURL('image/png');
+  if(key==='colaborador') state.form.firma_colaborador = dataUrl;
+  else state.form.firma_supervisor = dataUrl;
+}
+
+function clearSig(key){
+  const s = sigCanvases[key];
+  if(!s) return;
+  const rect = s.canvas.getBoundingClientRect();
+  s.ctx.clearRect(0,0,rect.width,rect.height);
+  if(key==='colaborador') state.form.firma_colaborador = '';
+  else state.form.firma_supervisor = '';
+}
+
+function step7(f){
+  const card = el('div', {class:'card'});
+  card.appendChild(el('p', {style:'font-weight:700;font-size:13px;margin:0 0 8px 0;'}, 'Firma del colaborador'));
+  card.appendChild(makeSignaturePad('colaborador', f.firma_colaborador));
+  card.appendChild(el('div', {style:'height:16px;'}));
+  card.appendChild(el('p', {style:'font-weight:700;font-size:13px;margin:0 0 8px 0;'}, `Firma del supervisor (${f.nombre_supervisor||'—'})`));
+  card.appendChild(makeSignaturePad('supervisor', f.firma_supervisor));
+  card.appendChild(el('div', {class:'consent'},
+    el('input', {type:'checkbox', id:'gpsChk', onchange:(e)=>{ if(e.target.checked) captureGPS(); }}),
+    el('label', {for:'gpsChk'}, 'Adjuntar ubicación GPS de esta visita (opcional)')
+  ));
+  if(f.gps_lat){
+    card.appendChild(el('p', {style:'font-size:11.5px;color:var(--muted);margin-top:6px;'}, `📍 ${f.gps_lat.toFixed(5)}, ${f.gps_lng.toFixed(5)}`));
+  }
+  return card;
+}
+
+function captureGPS(){
+  if(!navigator.geolocation){ toast('GPS no disponible en este dispositivo'); return; }
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{ state.form.gps_lat = pos.coords.latitude; state.form.gps_lng = pos.coords.longitude; render(); },
+    ()=>{ toast('No se pudo obtener la ubicación'); }
+  );
+}
+
+/* ================= NAV / FOOTER ================= */
+function renderFooterNav(){
+  const app = document.getElementById('app');
+  const old = document.getElementById('footerNav');
+  if(old) old.remove();
+  const nav = el('div', {class:'footer-nav', id:'footerNav'});
+  if(state.step>0){
+    nav.appendChild(el('button', {class:'btn ghost', onclick:()=>{state.step--; render();}}, '← Atrás'));
+  }
+  if(state.step < TOTAL_STEPS-1){
+    nav.appendChild(el('button', {class:'btn', onclick:()=>{
+      if(!validateStep()) return;
+      state.step++; render();
+    }}, 'Siguiente →'));
+  } else {
+    nav.appendChild(el('button', {class:'btn', disabled: state.saving, onclick: guardarVisita}, state.saving ? 'Guardando…' : '✓ Guardar verificación'));
+  }
+  document.body.appendChild(nav);
+}
+
+function validateStep(){
+  const f = state.form;
+  if(state.step===0){
+    if(!f.nombre_colaborador.trim()){ toast('Falta el nombre del colaborador'); return false; }
+    if(!f.puesto){ toast('Selecciona el puesto'); return false; }
+  }
+  if(state.step===5){
+    if(!f.resultado){ toast('Selecciona un resultado de verificación'); return false; }
+  }
+  return true;
+}
+
+async function guardarVisita(){
+  const f = state.form;
+  if(!f.firma_colaborador || !f.firma_supervisor){
+    if(!confirm('Falta al menos una firma. ¿Guardar de todas formas?')) return;
+  }
+  state.saving = true; render();
+  const payload = {...f};
+  try{
+    if(supabase){
+      const {error} = await supabase.from(TABLE).insert([payload]);
+      if(error) throw error;
+      toast('Guardado en Supabase ✓');
+    } else {
+      throw new Error('Supabase no configurado');
+    }
+  }catch(e){
+    console.warn('Guardando localmente por error de red/config:', e);
+    saveLocal(payload);
+    toast('Sin conexión: guardado localmente, se sincronizará después');
+  }
+  state.saving = false;
+  state.view = 'done';
+  render();
+}
+
+/* ================= LOCAL FALLBACK ================= */
+function saveLocal(payload){
+  const key='foo ax_verif_pending'.replace(' ','');
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push(payload);
+  localStorage.setItem(key, JSON.stringify(list));
+}
+function getLocalPending(){
+  const key='fooax_verif_pending';
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+async function syncPending(){
+  if(!supabase) return;
+  const key='fooax_verif_pending';
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  if(!list.length) return;
+  const remaining = [];
+  for(const item of list){
+    try{
+      const {error} = await supabase.from(TABLE).insert([item]);
+      if(error) remaining.push(item);
+    }catch(e){ remaining.push(item); }
+  }
+  localStorage.setItem(key, JSON.stringify(remaining));
+  if(remaining.length < list.length) toast('Registros pendientes sincronizados ✓');
+}
+
+/* ================= DONE VIEW ================= */
+function renderDone(){
+  const wrap = el('div', {});
+  const f = state.form;
+  const card = el('div', {class:'card', style:'text-align:center;padding:32px 20px;'});
+  card.appendChild(el('div', {style:'font-size:44px;margin-bottom:10px;'}, '✅'));
+  card.appendChild(el('h2', {style:'font-family:Georgia,serif;margin:0 0 6px 0;'}, 'Verificación registrada'));
+  card.appendChild(el('p', {style:'color:var(--muted);font-size:13.5px;margin:0 0 18px 0;'}, `Folio ${f.folio} · ${f.nombre_colaborador}`));
+  card.appendChild(el('button', {class:'btn', onclick:()=>{ state.form=emptyForm(); state.step=0; state.view='form'; render(); }}, 'Registrar otra visita'));
+  card.appendChild(el('div', {style:'height:10px;'}));
+  card.appendChild(el('button', {class:'btn secondary', onclick:()=>{ state.view='historial'; render(); }}, 'Ver historial'));
+  wrap.appendChild(card);
+  return wrap;
+}
+
+/* ================= HISTORIAL ================= */
+async function renderHistorial(){
+  const wrap = el('div', {});
+  wrap.appendChild(el('button', {class:'btn ghost', style:'margin-bottom:14px;', onclick:()=>{ state.view='form'; render(); }}, '← Volver al formulario'));
+  wrap.appendChild(el('h2', {style:'font-family:Georgia,serif;margin:0 0 12px 0;'}, 'Historial de verificaciones'));
+  const list = el('div', {id:'histList'});
+  wrap.appendChild(list);
+  loadHistorial(list);
+  return wrap;
+}
+
+async function loadHistorial(container){
+  container.innerHTML = '<p class="empty">Cargando…</p>';
+  let rows = [];
+  try{
+    if(supabase){
+      const {data, error} = await supabase.from(TABLE).select('*').order('created_at', {ascending:false}).limit(50);
+      if(error) throw error;
+      rows = data || [];
+    }
+  }catch(e){ console.warn(e); }
+  const pending = getLocalPending();
+  container.innerHTML = '';
+  if(!rows.length && !pending.length){
+    container.appendChild(el('p', {class:'empty'}, 'Aún no hay verificaciones registradas.'));
+    return;
+  }
+  pending.forEach(p=>{
+    container.appendChild(historialItem(p, true));
+  });
+  rows.forEach(r=>{
+    container.appendChild(historialItem(r, false));
+  });
+}
+
+function historialItem(r, isPending){
+  const badgeClass = r.resultado==='Verificación exitosa' ? 'exitosa' : (r.resultado==='No conforme' ? 'no-conforme' : 'observaciones');
+  return el('div', {class:'history-item'},
+    el('div', {},
+      el('div', {class:'h-name'}, r.nombre_colaborador || '(sin nombre)'),
+      el('div', {class:'h-meta'}, `${r.puesto||''} · ${r.fecha_visita||''} ${isPending ? '· pendiente de sincronizar':''}`)
+    ),
+    el('span', {class:'badge '+badgeClass}, r.resultado || '—')
+  );
+}
+
+/* ================= INIT ================= */
+document.getElementById('btnHistorial').addEventListener('click', ()=>{ state.view = state.view==='historial' ? 'form' : 'historial'; render(); });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+window.addEventListener('online', syncPending);
+syncPending();
+render();
+</script>
+</body>
+</html>
